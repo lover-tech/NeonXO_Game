@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # यहाँ हम गिटहब का थोड़ा पुराना और स्थिर सर्वर यूज़ कर रहे हैं जहाँ बिल्डोज़र बेस्ट चलता है
 
     steps:
     - uses: actions/checkout@v4
@@ -26,23 +26,19 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ccache
+        sudo apt-get install -y libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ccache automake autoconf libltdl-dev libtool pkg-config
         pip install --upgrade pip
         pip install --upgrade buildozer cython virtualenv sh
 
     - name: Build with Buildozer
-      env:
-        ANDROID_HOME: ${{ env.ANDROID_HOME }}
-        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
       run: |
-        # अगर पहले से कोई spec फाइल है तो उसे हटाकर फ्रेश शुरुआत करेंगे
         rm -f buildozer.spec
         buildozer init
         
-        # ऑटोमैटिकली स्पेसिफिकेशन फाइल में एंड्रॉइड सेटिंग्स को गिटहब के अनुसार सेट करना
+        # ऑटोमैटिकली स्पेसिफिकेशन फाइल में लाइसेंस एक्सेप्ट करना ताकि ये रुके नहीं
         sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
         
-        # अब बिना किसी प्रॉम्ट के सीधे साइलेंट मोड में बिल्ड करना
+        # बिना किसी एक्सटर्नल पाथ के फ्रेश और साइलेंट ऑटोमैटिक बिल्ड
         buildozer -v android debug
 
     - name: Upload APK Artifact
